@@ -1,12 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Slider from "react-slick";
-import list from "../../public/list.json";
+import axios from "axios";
 import Cards from "./Cards";
 
 function Freebook() {
-  const filterData = list.filter((data) => data.category.toLowerCase() === "free");
+  const [books, setBooks] = useState([]);
+
+  useEffect(() => {
+    const getBooks = async () => {
+      try {
+        const res = await axios.get("http://localhost:4001/books");
+        const data = res.data.filter((book) => book.category.toLowerCase() === "free");
+        console.log(data);
+        setBooks(data);
+      } catch (error) {
+        if (error.response) {
+          // The request was made and the server responded with a status code
+          // that falls out of the range of 2xx
+          console.error('Response error:', error.response.data);
+          console.error('Response status:', error.response.status);
+          console.error('Response headers:', error.response.headers);
+        } else if (error.request) {
+          // The request was made but no response was received
+          console.error('Request error:', error.request);
+        } else {
+          // Something happened in setting up the request that triggered an Error
+          console.error('Error:', error.message);
+        }
+      }
+    };
+    getBooks();
+  }, []);
 
   const settings = {
     dots: true,
@@ -55,7 +81,7 @@ function Freebook() {
       </div>
       <div>
         <Slider {...settings}>
-          {filterData.map((item) => (
+          {books.map((item) => (
             <Cards item={item} key={item.id} />
           ))}
         </Slider>

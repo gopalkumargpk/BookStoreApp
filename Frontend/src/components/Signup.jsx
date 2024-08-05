@@ -1,19 +1,48 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from "react-hook-form";
+import axios from "axios";
+import toast from 'react-hot-toast';
 
 function Signup() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = location.state?.from?.pathname || "/";
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  const navigate = useNavigate();
+  const onSubmit = async (data) => {
+    const userInfo = {
+      fullname: data.fullname,
+      email: data.email,
+      password: data.password,
+    };
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Handle signup logic here
+    try {
+      const response = await axios.post("http://localhost:4001/user/signup", userInfo);
+      const { user } = response.data;
+
+      // Store user data in localStorage
+      localStorage.setItem("User", JSON.stringify(user));
+
+      // Show success message
+      toast.success('Signup Successfully');
+
+      // Redirect to previous page or home page
+      navigate(from, { replace: true });
+    } catch (error) {
+      if (error.response) {
+        console.log(error.response.data);
+        toast.error("Error: " + error.response.data.message);
+      } else {
+        console.log(error.message);
+        toast.error("Error during signup: " + error.message);
+      }
+    }
   };
 
   const handleLoginClick = () => {
@@ -36,13 +65,13 @@ function Signup() {
                 <label htmlFor="name" className="block">Name</label>
                 <input
                   type="text"
-                  id="name"
+                  id="fullname"
                   placeholder="Enter your full name"
                   className="w-full px-3 py-2 border rounded-md outline-none"
-                  {...register("name", { required: true })}
+                  {...register("fullname", { required: true })}
                 />
                 <br />
-                {errors.name && (
+                {errors.fullname && (
                   <span className='text-sm text-red-500'>
                     This field is required
                   </span>

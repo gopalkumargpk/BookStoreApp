@@ -1,12 +1,28 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import Cards from '../components/Cards'; 
-import list from '../../public/list.json';
-import{Link} from 'react-router-dom';
+import Cards from '../components/Cards';
+import axios from "axios";
+import { Link } from 'react-router-dom';
 
 function Courses() {
-  console.log(list);
+  const [books, setBooks] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
+
+  useEffect(() => {
+    const getBooks = async () => {
+      try {
+        const res = await axios.get("http://localhost:4001/books");
+        setBooks(res.data);
+        setLoading(false); // Set loading to false after successful fetch
+      } catch (error) {
+        console.error("Error fetching books:", error);
+        setLoading(false); // Set loading to false on error
+      }
+    };
+    getBooks();
+  }, []);
+
   return (
     <>
       <Navbar />
@@ -26,23 +42,25 @@ function Courses() {
               enim eos aut. Nobis quisquam reiciendis sunt sed magnam consequatur!
             </p>
             <Link to="/">
-            <button className='mt-6 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-700 duration-300 font-bold'>
-              Back
-            </button>
+              <button className='mt-6 bg-pink-500 text-white px-4 py-2 rounded-md hover:bg-pink-700 duration-300 font-bold'>
+                Back
+              </button>
             </Link>
           </div>
           <div className='mt-12 grid grid-cols-1 md:grid-cols-4 gap-6'>
-            {
-              list.map((item) => (
+            {loading ? (
+              <p>Loading...</p> // Show a loading indicator while fetching data
+            ) : (
+              books.map((item) => (
                 <Cards key={item.id} item={item} />
               ))
-            }
+            )}
           </div>
         </div>
       </div>
       <Footer />
     </>
-  )
+  );
 }
 
 export default Courses;

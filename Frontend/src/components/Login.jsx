@@ -1,27 +1,52 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import '../styles/contact.css'
-
-
+import axios from 'axios';
+import toast, { Toaster } from 'react-hot-toast';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
-  const [loginData, setLoginData] = useState(null);
+  const navigate = useNavigate();
 
-  const onSubmit = data => {
-    setLoginData(data);
-    console.log(data);
-    // Handle login logic here
+  const onSubmit = async (data) => {
+    try {
+      const userInfo = {
+        email: data.email,
+        password: data.password,
+      };
+
+      const response = await axios.post("http://localhost:4001/user/login", userInfo);
+
+      if (response.data) {
+        toast.success("Successfully logged in");
+       
+        localStorage.setItem("User", JSON.stringify(response.data.user)); // Ensure the key matches the one used elsewhere
+
+        // Redirect to home page
+        navigate('/');
+
+        // Optionally, you can refresh the page if necessary
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1000);
+      }
+    } catch (err) {
+      if (err.response) {
+        console.log(err.response.data);
+        toast.error("Error: " + (err.response.data.message || "An error occurred"));
+      } else {
+        console.log(err);
+        toast.error("An unexpected error occurred.");
+      }
+    }
   };
 
   return (
     <div className="flex justify-center items-center h-screen">
-      <div className="custom-bg p-8 rounded-lg shadow-md w-full max-w-md"
-      >
+      <Toaster />
+      <div className="custom-bg p-8 rounded-lg shadow-md w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6">Login</h2>
         <form onSubmit={handleSubmit(onSubmit)}>
-        
           <div className="mb-4">
             <label htmlFor="email" className="block text-gray-700">Email</label>
             <input
@@ -50,12 +75,12 @@ const Login = () => {
         </form>
         <div className="mt-4 text-center">
           <p>
-            Not registered? <Link to="/Signup" className="text-blue-500 underline">Signup</Link>
+            Not registered? <Link to="/signup" className="text-blue-500 underline">Signup</Link>
           </p>
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default Login;

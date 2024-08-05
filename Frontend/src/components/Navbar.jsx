@@ -1,43 +1,42 @@
 import React, { useEffect, useState } from 'react';
-import '../styles/contact.css'
+import '../styles/contact.css';
+import { useAuth } from '../context/Authprovide'; // Corrected import path
+import Logout from './Logout'; // Assuming Logout is a button or a component
 
 export default function Navbar() {
-  const [theme, setTheme] = useState(localStorage.getItem("theme") ? localStorage.getItem("theme") : "light");
-
-  useEffect(() => {
-    const element = document.documentElement;
-    if (theme === "dark") {
-      element.classList.add("dark");
-      document.body.classList.add("dark");
-    } else {
-      element.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-      document.body.classList.remove("dark");
-    }
-  }, [theme]);
-
-  const handleThemeToggle = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-  };
-
+  const [authUser, setAuthUser] = useAuth(); // Using useAuth hook
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [sticky, setSticky] = useState(false);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 0) {
-        setSticky(true);
-      } else {
-        setSticky(false);  
-      }
-    };
+    const element = document.documentElement;
+    const body = document.body;
 
+    if (theme === "dark") {
+      element.classList.add("dark");
+      body.classList.add("dark");
+    } else {
+      element.classList.remove("dark");
+      body.classList.remove("dark");
+    }
+
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const handleThemeToggle = () => {
+    setTheme(prevTheme => prevTheme === "light" ? "dark" : "light");
+  };
+
+  useEffect(() => {
+    const handleScroll = () => setSticky(window.scrollY > 0);
     window.addEventListener('scroll', handleScroll);
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const handleLogout = () => {
+    // Perform logout logic here
+    setAuthUser(null); // Assuming setting authUser to null logs out the user
+  };
 
   const navItems = (
     <>
@@ -48,16 +47,8 @@ export default function Navbar() {
     </>
   );
 
-  const handleLoginClick = () => {
-    const modal = document.getElementById("my_modal_3");
-    if (modal) {
-      modal.showModal();
-    }
-  };
-
   return (
-    <div className={`max-w-screen-2xl container mx-auto md:px-20 px-4 fixed top-0 left-0 right-0 z-50 ${sticky 
-    ? "sticky-navbar shadow-md bg-base-200 duration-300 transition-all ease-in-out" : ''}`}>
+    <div className={`max-w-screen-2xl container mx-auto md:px-20 px-4 fixed top-0 left-0 right-0 z-50 transition-all ease-in-out ${sticky ? "shadow-md bg-base-200" : ''}`}>
       <div className="navbar">
         <div className="navbar-start">
           <div className="dropdown">
@@ -84,7 +75,7 @@ export default function Navbar() {
               {navItems}
             </ul>
           </div>
-          <a href="/" className="btn btn-ghost text-xl">bookStore</a> 
+          <a href="/" className="btn btn-ghost text-xl">bookStore</a>
         </div>
         <div className="navbar-end space-x-3">
           <div className="navbar-center hidden lg:flex">
@@ -94,8 +85,7 @@ export default function Navbar() {
           </div>
           <div className="hidden md:block">
             <label className="px-2 py-1 border rounded-md flex items-center gap-2">
-              <input type="text" className="grow outline-none dark:bg-slate-800 dark:text-white bg-white-200 px-2 py-1 rounded-md" 
-              placeholder="Search" />
+              <input type="text" className="grow outline-none dark:bg-slate-800 dark:text-white bg-white-200 px-2 py-1 rounded-md" placeholder="Search" />
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 16 16"
@@ -112,9 +102,8 @@ export default function Navbar() {
           </div>
           <label className="swap swap-rotate">
             <input type="checkbox" className="theme-controller" checked={theme === "dark"} onChange={handleThemeToggle} />
-            {/* sun icon */}
             <svg
-              className="swap-off h-8 w-8 fill-current"
+              className={`swap-off h-8 w-8 fill-current ${theme === "dark" ? "hidden" : ""}`}
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
             >
@@ -122,9 +111,8 @@ export default function Navbar() {
                 d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"
               />
             </svg>
-            {/* moon icon */}
             <svg
-              className="swap-on h-8 w-8 fill-current"
+              className={`swap-on h-8 w-8 fill-current ${theme === "light" ? "hidden" : ""}`}
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
             >
@@ -133,7 +121,19 @@ export default function Navbar() {
               />
             </svg>
           </label>
-          <ul><li className="list-item"><a href="/login" className="custom-button">Login</a></li></ul>
+          <ul>
+            <li className="list-item">
+              {authUser ? (
+                <button onClick={handleLogout} className="custom-button bg-red-500">
+                  Logout
+                </button>
+              ) : (
+                <a href="/login" className="custom-button">
+                  Login
+                </a>
+              )}
+            </li>
+          </ul>
         </div>
       </div>
     </div>
